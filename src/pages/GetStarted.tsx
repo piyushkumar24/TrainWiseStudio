@@ -1,6 +1,7 @@
+"use client"
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
@@ -9,8 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import FloatingElements from '@/components/FloatingElements';
 
 const GetStarted = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [showValidationError, setShowValidationError] = useState(false);
@@ -31,9 +32,9 @@ const GetStarted = () => {
       if (session?.user) {
         const onboardingComplete = session.user.user_metadata?.onboarding_complete;
         if (onboardingComplete) {
-          navigate('/dashboard');
+          router.push('/dashboard');
         } else {
-          navigate('/onboarding');
+          router.push('/onboarding');
         }
       }
     };
@@ -45,16 +46,16 @@ const GetStarted = () => {
         if (event === 'SIGNED_IN' && session?.user) {
           const onboardingComplete = session.user.user_metadata?.onboarding_complete;
           if (onboardingComplete) {
-            navigate('/dashboard');
+            router.push('/dashboard');
           } else {
-            navigate('/onboarding');
+            router.push('/onboarding');
           }
         }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [router]);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -1,13 +1,14 @@
+"use client"
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 interface AuthCardProps {
   children: React.ReactNode;
 }
 
 const AuthCard: React.FC<AuthCardProps> = ({ children }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div className="w-full max-w-md animate-fade-in">
@@ -24,7 +25,7 @@ const AuthCard: React.FC<AuthCardProps> = ({ children }) => {
           <p className="text-white/80 text-sm">
             Don't have an account?{' '}
             <button
-              onClick={() => navigate('/get-started')}
+              onClick={() => router.push('/get-started')}
               className="text-orange hover:text-orange-hover font-medium underline"
             >
               Get Started

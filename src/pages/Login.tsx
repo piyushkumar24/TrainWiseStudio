@@ -1,6 +1,7 @@
+"use client"
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/integrations/supabase/client';
 import { useLoginAuth } from '@/hooks/useLoginAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -13,7 +14,7 @@ import type { Session } from '@supabase/supabase-js';
 const Login = () => {
   const [showResetForm, setShowResetForm] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
   const { isLoading, isResetLoading, handleLogin, handlePasswordReset } = useLoginAuth();
   const { isLoading: isRoleLoading } = useUserRole(session);
 

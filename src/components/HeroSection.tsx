@@ -1,12 +1,13 @@
+"use client"
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
 
 const HeroSection = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [email, setEmail] = useState('');
   const [showValidationError, setShowValidationError] = useState(false);
@@ -55,7 +56,7 @@ const HeroSection = () => {
     setShowValidationError(false);
     
     // Navigate to get-started page with email as query parameter
-    navigate(`/get-started?email=${encodeURIComponent(email)}`);
+    router.push(`/get-started?email=${encodeURIComponent(email)}`);
   };
 
   return (

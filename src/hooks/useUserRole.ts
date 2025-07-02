@@ -1,6 +1,7 @@
+"use client"
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 
@@ -11,7 +12,7 @@ interface UserRoleData {
 export const useUserRole = (session: Session | null) => {
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     const handleRoleBasedRedirect = async () => {
@@ -29,7 +30,7 @@ export const useUserRole = (session: Session | null) => {
 
         if (roleError) {
           console.error('Error fetching user role:', roleError);
-          navigate('/');
+          router.push('/');
           return;
         }
 
@@ -39,18 +40,18 @@ export const useUserRole = (session: Session | null) => {
         if (role === 'customer') {
           const onboardingComplete = session.user.user_metadata?.onboarding_complete;
           if (!onboardingComplete) {
-            navigate('/onboarding');
+            router.push('/onboarding');
           } else {
-            navigate('/dashboard');
+            router.push('/dashboard');
           }
         } else if (role === 'coach') {
-          navigate('/coach');
+          router.push('/coach');
         } else {
-          navigate('/');
+          router.push('/');
         }
       } catch (error) {
         console.error('Error in role-based redirect:', error);
-        navigate('/');
+        router.push('/');
       } finally {
         setIsLoading(false);
       }
@@ -61,7 +62,7 @@ export const useUserRole = (session: Session | null) => {
     } else {
       setIsLoading(false);
     }
-  }, [session, navigate]);
+  }, [session, router]);
 
   return { isLoading, userRole };
 };

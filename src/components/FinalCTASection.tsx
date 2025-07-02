@@ -1,18 +1,19 @@
+"use client"
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 const FinalCTASection = () => {
   const [email, setEmail] = useState('');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleGetStarted = () => {
     if (email) {
-      navigate(`/get-started?email=${encodeURIComponent(email)}`);
+      router.push(`/get-started?email=${encodeURIComponent(email)}`);
     } else {
-      navigate('/get-started');
+      router.push('/get-started');
     }
   };
 

@@ -1,14 +1,15 @@
+"use client"
 
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Brand } from '@/components/shared/Brand';
 
 const NavbarLanding = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,11 +25,11 @@ const NavbarLanding = () => {
   };
 
   const handleGetStarted = () => {
-    navigate('/get-started');
+    router.push('/get-started');
   };
 
   const handleLogin = () => {
-    navigate('/login');
+    router.push('/login');
   };
 
   return (

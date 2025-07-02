@@ -1,11 +1,12 @@
+"use client"
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 
 const PricingSection = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const pricingPlans = [
     {
@@ -61,9 +62,9 @@ const PricingSection = () => {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
-      navigate(`/checkout?plan=${planKey}`);
+      router.push(`/checkout?plan=${planKey}`);
     } else {
-      navigate(`/get-started?plan=${planKey}`);
+      router.push(`/get-started?plan=${planKey}`);
     }
   };
 
