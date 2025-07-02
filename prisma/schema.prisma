@@ -1,0 +1,305 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and basic user info
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          Role      @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // User profile data
+  profile       Profile?
+
+  // Relationships
+  accounts      Account[]
+  sessions      Session[]
+  programs      Program[]    @relation("CreatedPrograms") // Programs created by coach
+  assignedPrograms ProgramAssignment[] // Programs assigned to customer
+  requests      Request[]
+  blogPosts     BlogPost[]   @relation("AuthoredPosts")
+  files         File[]       @relation("UploadedFiles")
+  subscriptions Subscription[]
+  checkIns      CheckIn[]
+  feedback      Feedback[]   @relation("GivenFeedback")
+  receivedFeedback Feedback[] @relation("ReceivedFeedback")
+  shopItems     ShopItem[]
+}
+
+enum Role {
+  COACH
+  CUSTOMER
+}
+
+// NextAuth required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// User profile with additional information
+model Profile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  goals             String?  @db.Text
+  allergies         String?  @db.Text
+  pastInjuries      String?  @db.Text
+  likesAndDislikes  String?  @db.Text
+  preferredProgram  ProgramType?
+  onboardingComplete Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Program model for fitness, nutrition, and mental health programs
+model Program {
+  id          String      @id @default(cuid())
+  title       String
+  description String      @db.Text
+  type        ProgramType
+  status      ProgramStatus @default(DRAFT)
+  createdById String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  content     Json        // Structured content for the program
+  duration    Int         // Duration in days
+  thumbnail   String?     // URL to thumbnail image
+  inShop      Boolean     @default(false)
+  price       Float?      // Price if in shop
+
+  // Relationships
+  createdBy   User        @relation("CreatedPrograms", fields: [createdById], references: [id])
+  assignments ProgramAssignment[]
+  shopItem    ShopItem?
+}
+
+enum ProgramType {
+  FITNESS
+  NUTRITION
+  MENTAL
+}
+
+enum ProgramStatus {
+  DRAFT
+  SAVED
+  ASSIGNED
+  SCHEDULED
+  IN_SHOP
+}
+
+// Program assignment to users
+model ProgramAssignment {
+  id          String   @id @default(cuid())
+  programId   String
+  userId      String
+  startDate   DateTime
+  endDate     DateTime
+  welcomeMessage String? @db.Text
+  status      AssignmentStatus @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  program     Program  @relation(fields: [programId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+  logs        ProgramLog[]
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+// Program logs for tracking progress
+model ProgramLog {
+  id          String   @id @default(cuid())
+  assignmentId String
+  date        DateTime
+  content     Json     // Structured content for the log entry
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  assignment  ProgramAssignment @relation(fields: [assignmentId], references: [id])
+}
+
+// Subscription plans
+model Subscription {
+  id          String   @id @default(cuid())
+  userId      String
+  planType    PlanType
+  startDate   DateTime
+  endDate     DateTime
+  status      SubscriptionStatus @default(ACTIVE)
+  stripeSubscriptionId String?
+  stripeCustomerId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+enum PlanType {
+  TRIAL
+  OTP
+  STANDARD
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+// Customer requests
+model Request {
+  id          String   @id @default(cuid())
+  userId      String
+  status      RequestStatus @default(PENDING)
+  seenAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+enum RequestStatus {
+  PENDING
+  SEEN
+  COMPLETED
+}
+
+// Blog posts
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  content     Json     // Structured content for the blog post
+  category    ProgramType
+  authorId    String
+  published   Boolean  @default(false)
+  thumbnail   String?  // URL to thumbnail image
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  author      User     @relation("AuthoredPosts", fields: [authorId], references: [id])
+}
+
+// Files (PDFs, etc.)
+model File {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  type        FileType
+  uploaderId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  uploader    User     @relation("UploadedFiles", fields: [uploaderId], references: [id])
+}
+
+enum FileType {
+  WELCOME
+  FIRST_PROGRAM
+  SUBSCRIPTION_ENDED
+  DIRECT
+  MOTIVATIONAL
+}
+
+// Check-ins for tracking progress
+model CheckIn {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime
+  weight      Float?
+  mood        Int?     // Scale 1-5
+  energy      Int?     // Scale 1-5
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+// Coach feedback
+model Feedback {
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  coachId     String
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  coach       User     @relation("GivenFeedback", fields: [coachId], references: [id])
+  user        User     @relation("ReceivedFeedback", fields: [userId], references: [id])
+}
+
+// Shop items
+model ShopItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  price       Float
+  programId   String?  @unique // If this is a program in the shop
+  createdById String
+  thumbnail   String?  // URL to thumbnail image
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  program     Program? @relation(fields: [programId], references: [id])
+} 
