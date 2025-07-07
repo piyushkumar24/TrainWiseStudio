@@ -11,10 +11,10 @@ export const stripe = new Stripe(stripeSecretKey, {
 
 // Define subscription plan IDs
 export const SUBSCRIPTION_PLANS = {
-  TRIAL: 'price_trial', // Free trial (placeholder)
-  OTP: 'price_otp', // One-time payment
-  STANDARD: 'price_standard', // Standard monthly subscription
-  PREMIUM: 'price_premium', // Premium monthly subscription
+  TRIAL: 'price_1RgYDiPL9sQgSKUW2b3nOQVz', // Trial Plan Price ID
+  OTP: 'price_1RgYEoPL9sQgSKUWu0cm30os', // OTP Plan Price ID
+  STANDARD: 'price_1RgYFDPL9sQgSKUWtqhC2Rqi', // Standard Plan Price ID
+  PREMIUM: 'price_1RgYFXPL9sQgSKUWPRphaplz', // Premium Plan Price ID
 };
 
 // Create a checkout session for subscription

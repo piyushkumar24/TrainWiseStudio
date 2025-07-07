@@ -27,5 +27,8 @@ export const useToast = () => {
     });
   };
 
-  return { toast };
+  // Add empty toasts array to prevent errors with any component expecting it
+  const toasts: any[] = [];
+
+  return { toast, toasts };
 }; 

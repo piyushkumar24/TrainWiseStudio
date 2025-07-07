@@ -106,8 +106,14 @@ export async function POST(req: Request) {
       stripeCustomerId = customer.id;
     }
 
+    // Ensure planType is typed correctly for accessing SUBSCRIPTION_PLANS
+    const validPlanType = planType as "TRIAL" | "OTP" | "STANDARD" | "PREMIUM";
+    
     // Get price ID based on plan type
-    const priceId = SUBSCRIPTION_PLANS[planType];
+    const priceId = SUBSCRIPTION_PLANS[validPlanType];
+
+    // Set checkout mode based on plan type
+    const mode = planType === "OTP" ? "payment" : "subscription";
 
     // Create checkout session
     const checkoutSession = await stripe.checkout.sessions.create({
@@ -118,14 +124,12 @@ export async function POST(req: Request) {
           quantity: 1,
         },
       ],
-      mode: "subscription",
+      mode,
       success_url: `${process.env.NEXTAUTH_URL}/dashboard/checkout?success=true`,
       cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/checkout?canceled=true`,
-      subscription_data: {
-        metadata: {
-          userId: user.id,
-          planType,
-        },
+      metadata: {
+        userId: user.id,
+        planType,
       },
     });
 
